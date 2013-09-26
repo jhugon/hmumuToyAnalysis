@@ -386,3 +386,9 @@ void setStyle()
 
   gStyle->SetOptStat(0);
 }
+
+void setHistTitles(TH1F* hist, TString xtitle, TString ytitle)
+{
+  hist->GetXaxis()->SetTitle(xtitle);
+  hist->GetYaxis()->SetTitle(ytitle);
+}

@@ -24,7 +24,7 @@
 #include "src/SmearingTool.h"
 #include "src/SmearingTool2011.h"
 
-void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSignal, unsigned maxEvents)
+void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, bool isData, bool isSignal, unsigned maxEvents)
 {
   using namespace std;
 
@@ -36,6 +36,18 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
 
   //gErrorIgnoreLevel = kError;
   const unsigned ISMEAR = 2;
+
+  ///////////////////////////
+  // Output Histograms
+
+  setStyle();
+
+  TH1F* dimuonMassHist = new TH1F("dimuonMass","",50,110,160);
+  setHistTitles(dimuonMassHist,"M(#mu#mu) [GeV/c^{2}]","Events");
+  dimuonMassHist->Sumw2();
+  TH1F* nJetsHist = new TH1F("nJets","",10,0,10);
+  setHistTitles(nJetsHist,"N_{Jets}","Events");
+  nJetsHist->Sumw2();
 
   ///////////////////////////
   Double_t MASS_MUON = 0.105658367;    //GeV/c2
@@ -271,32 +283,40 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
       }
     }
 
-    /////////////////////////////////////////////
+//    /////////////////////////////////////////////
+//
+//    cout << "Event: "<< eventInfo.run << ":" << eventInfo.event << endl;
+//
+//    // print muon-related info
+//    cout << "recoCandMass: " << recoCandMass << endl;
+//    cout << "muon Pt1: " << reco1.pt << endl;
+//    cout << "muon Pt2: " << reco2.pt << endl;
+//    cout << "muon eta1: " << reco1.eta << endl;
+//    cout << "muon eta2: " << reco2.eta << endl;
+//    cout << "muon iso1: " << getPFRelIso(reco1) << endl;
+//    cout << "muon iso2: " << getPFRelIso(reco2) << endl;
+//    cout << "PU weight: " << weight << endl;
+//    cout << endl;
+//
+//    // print jet-related info
+//    cout << "nJets: " << jets.size() << endl;
+//    for (unsigned iJet=0; iJet < jets.size(); iJet++)
+//    {
+//      cout << "Jet "<<(iJet+1)<<": pt="<< jets[iJet].Pt() << " eta="<<jets[iJet].Eta()<<endl;
+//    }
+//    cout << endl;
+//
+//    /////////////////////////////////////////////
+      // Fill Histograms
 
-    cout << "Event: "<< eventInfo.run << ":" << eventInfo.event << endl;
-
-    // print muon-related info
-    cout << "recoCandMass: " << recoCandMass << endl;
-    cout << "muon Pt1: " << reco1.pt << endl;
-    cout << "muon Pt2: " << reco2.pt << endl;
-    cout << "muon eta1: " << reco1.eta << endl;
-    cout << "muon eta2: " << reco2.eta << endl;
-    cout << "muon iso1: " << getPFRelIso(reco1) << endl;
-    cout << "muon iso2: " << getPFRelIso(reco2) << endl;
-    cout << "PU weight: " << weight << endl;
-    cout << endl;
-
-    // print jet-related info
-    cout << "nJets: " << jets.size() << endl;
-    for (unsigned iJet=0; iJet < jets.size(); iJet++)
-    {
-      cout << "Jet "<<(iJet+1)<<": pt="<< jets[iJet].Pt() << " eta="<<jets[iJet].Eta()<<endl;
-    }
-    cout << endl;
-
-    /////////////////////////////////////////////
-
+      dimuonMassHist->Fill(recoCandMass,weight);
+      nJetsHist->Fill(jets.size(),weight);
 
   }
+
+  TFile* outFile = new TFile(outputFileName,"RECREATE");
+  outFile->cd();
+  dimuonMassHist->Write();
+  nJetsHist->Write();
 
 }
