@@ -97,7 +97,7 @@ for histName in histNames:
   mcHistList = []
   for f,sampleName in zip(mcFiles,mcSampleNames):
     hist = f.Get(histName)
-    hist.Scale(luminosity*xsecDict[sampleName]/originalNEventsDict[sampleName])
+    hist.Scale(luminosity*1000.*xsecDict[sampleName]/originalNEventsDict[sampleName])
     hist.SetFillColor(colorsDict[sampleName])
     hist.SetFillStyle(1)
     hist.SetLineColor(colorsDict[sampleName])

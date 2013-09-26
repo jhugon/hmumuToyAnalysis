@@ -18,9 +18,9 @@
   analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/WZ_minimal.root","WZ.root",runPeriod,false,false,maxEvents);
   analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/ZZ_minimal.root","ZZ.root",runPeriod,false,false,maxEvents);
 
-  //analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012A-13Jan2013-v1_minimal.root","SingleMuRun2012A.root",runPeriod,true,false,maxEvents);
-  //analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012B-13Jan2013-v1_minimal.root","SingleMuRun2012B.root",runPeriod,true,false,maxEvents);
-  //analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012C-13Jan2013-v1_minimal.root","SingleMuRun2012C.root",runPeriod,true,false,maxEvents);
-  //analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012D-13Jan2013-v1_minimal.root","SingleMuRun2012D.root",runPeriod,true,false,maxEvents);
+//  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012A-13Jan2013-v1_minimal.root","SingleMuRun2012A.root",runPeriod,true,false,maxEvents);
+//  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012B-13Jan2013-v1_minimal.root","SingleMuRun2012B.root",runPeriod,true,false,maxEvents);
+//  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012C-13Jan2013-v1_minimal.root","SingleMuRun2012C.root",runPeriod,true,false,maxEvents);
+//  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/SingleMuRun2012D-13Jan2013-v1_minimal.root","SingleMuRun2012D.root",runPeriod,true,false,maxEvents);
   
 }

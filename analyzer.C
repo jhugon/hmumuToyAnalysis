@@ -55,6 +55,10 @@ void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, 
   //////////////////////////
   // Tree Branches
   cout << "Analyzing filename: "<< inputFileName.Data() << endl;
+  if (isData)
+    cout << "isData\n";
+  if (isSignal)
+    cout << "isSignal\n";
 
   TChain * tree = new TChain("tree");
   tree->Add(inputFileName);
