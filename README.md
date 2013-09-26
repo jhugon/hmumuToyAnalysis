@@ -22,8 +22,17 @@ It does not include:
 Instructions
 ============
 
-Log on to melrose.  Create your own scratch directory: /raid/raid8/<username>
-Move to that directory, and clone this git repository:
+Log on to melrose.  Create your own scratch directory: /raid/raid8/<username>, and move into it.
+
+You will need a working copy of ROOT to analyze Ntuples.  The easiest way to get one is to create a CMSSW release, move into it and setup your environment.
+
+    cmsrel CMSSW_5_3_9
+    cd CMSSW_5_3_9
+    cmsenv
+
+Now you should be able to type the root command and get a working prompt, if so you can continue to setup the anlaysis package.
+
+First, clone this git repository:
 
     git clone https://github.com/jhugon/hmumuToyAnalysis.git
 
@@ -35,6 +44,6 @@ It spits out .root files with histograms inside.  If you would like to analyze a
 
 To make images from the histograms, just run:
 
-    ./plot.py script.  
+    ./plot.py
     
-Currently, it stacks each MC histogram, after rescaling appropriately, and displays the data on top.
+Currently, plot.py stacks each MC histogram, after rescaling appropriately, and displays the data on top.
