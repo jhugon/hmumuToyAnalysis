@@ -17,6 +17,7 @@
 #include <TRandom3.h>
 
 #include "DataFormats.h"
+#include "helpers.h"
 #include "LumiReweightingStandAlone.h"
 
 void analyzer ()
@@ -26,7 +27,7 @@ void analyzer ()
   ///////////////////
   // Configuration
 
-  unsigned maxEvents = 20;
+  unsigned maxEvents = 100;
   bool isData = false;
 
   TString inputFileName("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/GluGlu_HToMM_M-125.root");
@@ -126,11 +127,30 @@ void analyzer ()
     cout << "Using 2012ABCD PU reweighting\n";
   }
 
+  ///////////////////////////////
+  // Which Muon Selection to Use
+
+  bool (*muonIdFuncPtr)(_MuonInfo&);
+  if (runPeriod == "7TeV")
+    {
+      cout << "Using 2011 Tight Muon Selection\n";
+      muonIdFuncPtr = &isKinTight_2011_noIso;
+    }
+  else
+    {
+      cout << "Using 2012 Tight Muon Selection\n";
+      muonIdFuncPtr = &isKinTight_2012_noIso;
+    }
 
   unsigned nEvents = tree->GetEntries();
   unsigned reportEach=1000;
   if (nEvents/1000>reportEach)
     reportEach = nEvents/1000;
+
+  ///////////////////////////////
+  ///////////////////////////////
+  ///////////////////////////////
+  // Event Loop
 
   for(unsigned i=0; i<nEvents;i++)
   {
@@ -140,18 +160,37 @@ void analyzer ()
     tree->GetEvent(i);
     if (i % reportEach == 0) cout << "Event: " << i << endl;
 
-    if (recoCandMass > maxMmm || recoCandMass < minMmm)
+    // Muon-related cuts
+
+    //if (recoCandMass > maxMmm || recoCandMass < minMmm)
+    //    continue;
+
+    bool muon1PassId = (*muonIdFuncPtr)(reco1);
+    bool muon2PassId = (*muonIdFuncPtr)(reco2);
+    if ( !(muon1PassId && muon2PassId))
         continue;
 
-    cout << "recoCandMass: " << recoCandMass << endl;
+    bool muon1PassIso = (getPFRelIso(reco1) <= 0.12);
+    bool muon2PassIso = (getPFRelIso(reco2) <= 0.12);
+    if ( !(muon1PassIso && muon2PassIso))
+        continue;
 
+    // PU reweight
     float weight = 1.;
     if (!isData)
     {
       weight *= lumiWeights.weight(nPU);
     }
 
+    cout << "recoCandMass: " << recoCandMass << endl;
+    cout << "muon Pt1: " << reco1.pt << endl;
+    cout << "muon Pt2: " << reco2.pt << endl;
+    cout << "muon eta1: " << reco1.eta << endl;
+    cout << "muon eta2: " << reco2.eta << endl;
+    cout << "muon iso1: " << getPFRelIso(reco1) << endl;
+    cout << "muon iso2: " << getPFRelIso(reco2) << endl;
     cout << "PU weight: " << weight << endl;
+    cout << endl;
 
 
   }

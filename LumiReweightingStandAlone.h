@@ -261,7 +261,8 @@ namespace reweight {
 
 	  //std::cout << " Lumi/Pileup Reweighting: Computed Weights per In-Time Nint " << std::endl;
 
-	  int NBins = weights_->GetNbinsX();
+
+	  //int NBins = weights_->GetNbinsX();
 
 	  //for(int ibin = 1; ibin<NBins+1; ++ibin){
 	  //  std::cout << "   " << ibin-1 << " " << weights_->GetBinContent(ibin) << std::endl;
