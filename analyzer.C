@@ -17,6 +17,7 @@
 #include <TRandom3.h>
 
 #include "DataFormats.h"
+#include "LumiReweightingStandAlone.h"
 
 void analyzer ()
 {
@@ -28,7 +29,11 @@ void analyzer ()
   unsigned maxEvents = 20;
   bool isData = false;
 
-  TString inputFileName("/raid/raid8/jhugon/higgsSamples/stage1/GluGlu_HToMM_M-125.root");
+  TString inputFileName("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/GluGlu_HToMM_M-125.root");
+  TString runPeriod("8TeV");
+
+  float minMmm = 110;
+  float maxMmm = 160;
 
   //gErrorIgnoreLevel = kError;
 
@@ -105,21 +110,21 @@ void analyzer ()
   tree->SetBranchAddress("met",&met);
 
 
-//  //////////////////////////
-//  //for PU reweighting
-//
-//  TRandom3 random(1457);
-//
-//  reweight::LumiReWeighting lumiWeights("pileupDists/PileUpHistMC2012Summer50nsPoissonOOTPU.root","pileupDists/PileUpHist2012ABCD.root","pileup","pileup");
-//  if (runPeriod == "7TeV")
-//    {
-//      cout << "Using 2011AB PU reweighting\n";
-//      lumiWeights = reweight::LumiReWeighting("pileupDists/PileUpHistMCFall11.root","pileupDists/PileUpHist2011AB.root","pileup","pileup");
-//    }
-//  else
-//    {
-//      cout << "Using 2012ABCD PU reweighting\n";
-//    }
+  //////////////////////////
+  //for PU reweighting
+
+  TRandom3 random(1457);
+
+  reweight::LumiReWeighting lumiWeights("pileupDists/PileUpHistMC2012Summer50nsPoissonOOTPU.root","pileupDists/PileUpHist2012ABCD.root","pileup","pileup");
+  if (runPeriod == "7TeV")
+  {
+    cout << "Using 2011AB PU reweighting\n";
+    lumiWeights = reweight::LumiReWeighting("pileupDists/PileUpHistMCFall11.root","pileupDists/PileUpHist2011AB.root","pileup","pileup");
+  }
+  else
+  {
+    cout << "Using 2012ABCD PU reweighting\n";
+  }
 
 
   unsigned nEvents = tree->GetEntries();
@@ -135,7 +140,19 @@ void analyzer ()
     tree->GetEvent(i);
     if (i % reportEach == 0) cout << "Event: " << i << endl;
 
+    if (recoCandMass > maxMmm || recoCandMass < minMmm)
+        continue;
+
     cout << "recoCandMass: " << recoCandMass << endl;
+
+    float weight = 1.;
+    if (!isData)
+    {
+      weight *= lumiWeights.weight(nPU);
+    }
+
+    cout << "PU weight: " << weight << endl;
+
 
   }
 
