@@ -25,10 +25,10 @@ void analyzer ()
   ///////////////////
   // Configuration
 
-  unsigned maxEvents = 1000;
+  unsigned maxEvents = 20;
   bool isData = false;
 
-  TString inputFileName("/raid/raid9/jhugon/higgsSamples/stage1/GluGlu_HToMM_M-125.root");
+  TString inputFileName("/raid/raid8/jhugon/higgsSamples/stage1/GluGlu_HToMM_M-125.root");
 
   //gErrorIgnoreLevel = kError;
 
