@@ -16,6 +16,8 @@
 #include <TF1.h>
 #include <TRandom3.h>
 
+#include "DataFormats.h"
+
 void analyzer ()
 {
   using namespace std;
