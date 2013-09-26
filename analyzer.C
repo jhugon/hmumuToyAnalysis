@@ -16,6 +16,8 @@
 #include <TF1.h>
 #include <TRandom3.h>
 
+#include <vector>
+
 #include "src/DataFormats.h"
 #include "src/helpers.h"
 #include "src/LumiReweightingStandAlone.h"
@@ -46,11 +48,13 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
   tree->Add(inputFileName);
 
 
+  // These are the names of the muons (See src/DataFormats.h for definitions!)
   _MuonInfo reco1, reco2;
 
   tree->SetBranchAddress("reco1", &reco1);
   tree->SetBranchAddress("reco2", &reco2);
 
+  // These are the dimuon mass, pt, rapidity, and phi
   float recoCandMass, recoCandPt, recoCandY, recoCandPhi;
   float recoCandMassRes, recoCandMassResCov;
 
@@ -61,11 +65,12 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
   tree->SetBranchAddress("recoCandMassRes",    &recoCandMassRes);
   tree->SetBranchAddress("recoCandMassResCov", &recoCandMassResCov);
 
+  // MC truth info
   float trueMass=-99999.0;
   if(!isData && tree->GetBranchStatus("trueMass"))
     tree->SetBranchAddress("trueMass", &trueMass);
 
-  /// Higgs Boson 
+  /// Higgs Boson MC truth info (after FSR)
   _genPartInfo genHpostFSR;
   if(!isData && tree->GetBranchStatus("genHpostFSR"))
     tree->SetBranchAddress("genHpostFSR", &genHpostFSR);
@@ -78,8 +83,12 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
   if(!isData && tree->GetBranchStatus("genM2HpostFSR"))
     tree->SetBranchAddress("genM2HpostFSR", &reco2GenPostFSR);
 
-  _PFJetInfo jets;
-  tree->SetBranchAddress("pfJets",&jets);
+  /// the jet collection
+  // these 'rawJets' already have Loose Jet ID applied, and JES corrections
+  // and are cross-cleaned of tight muons
+  // later, jets will have JER corrections, PUID, and basic cuts applied
+  _PFJetInfo rawJets;
+  tree->SetBranchAddress("pfJets",&rawJets);
 
   float puJetFullDisc[10];
   float puJetSimpleDisc[10];
@@ -106,9 +115,10 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
   tree->SetBranchAddress("vertexInfo",&vertexInfo);
   _EventInfo eventInfo;
   tree->SetBranchAddress("eventInfo",&eventInfo);
+
+  // Be careful, the met has not been well validated
   _MetInfo met;
   tree->SetBranchAddress("met",&met);
-
 
   //////////////////////////
   //for PU reweighting
@@ -239,6 +249,33 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
       weight *= lumiWeights.weight(nPU);
     }
 
+    // Jet Part
+    // Do basic selection on jets and JER corrections
+    std::vector<TLorentzVector> jets;
+    const float jetPtCut = 30.;
+    const float jetAbsEtaCut = 4.7;
+    const int jetPUIDCut = 4; // >=    tight = 7, medium = 6, loose = 4. Only loose is useful!!
+    for(unsigned iJet=0; (iJet < unsigned(rawJets.nJets) && iJet < 10);iJet++)
+    {
+      // apply jet energy resolution corrections
+      if (rawJets.genPt[iJet]>0.0 && rawJets.pt[iJet]>15.)
+        rawJets.pt[iJet] = jerCorr(rawJets.pt[iJet],rawJets.genPt[iJet],rawJets.eta[iJet]); 
+      bool goodPt = rawJets.pt[iJet]>jetPtCut;
+      bool goodEta = fabs(rawJets.eta[iJet])<jetAbsEtaCut;
+      bool goodPUID = puJetFullId[iJet] >= jetPUIDCut;
+      if (goodPt && goodEta && goodPUID)
+      {
+        TLorentzVector tmpJetVec;
+        tmpJetVec.SetPtEtaPhiM(rawJets.pt[iJet],rawJets.eta[iJet],rawJets.phi[iJet],rawJets.mass[iJet]);
+        jets.push_back(tmpJetVec);
+      }
+    }
+
+    /////////////////////////////////////////////
+
+    cout << "Event: "<< eventInfo.run << ":" << eventInfo.event << endl;
+
+    // print muon-related info
     cout << "recoCandMass: " << recoCandMass << endl;
     cout << "muon Pt1: " << reco1.pt << endl;
     cout << "muon Pt2: " << reco2.pt << endl;
@@ -248,6 +285,16 @@ void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSig
     cout << "muon iso2: " << getPFRelIso(reco2) << endl;
     cout << "PU weight: " << weight << endl;
     cout << endl;
+
+    // print jet-related info
+    cout << "nJets: " << jets.size() << endl;
+    for (unsigned iJet=0; iJet < jets.size(); iJet++)
+    {
+      cout << "Jet "<<(iJet+1)<<": pt="<< jets[iJet].Pt() << " eta="<<jets[iJet].Eta()<<endl;
+    }
+    cout << endl;
+
+    /////////////////////////////////////////////
 
 
   }
