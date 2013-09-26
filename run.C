@@ -5,6 +5,17 @@
   gSystem->cd("../");
   gROOT->ProcessLine(".L analyzer.C++");
   
-  analyzer();
+  unsigned maxEvents = 100;
+  TString runPeriod("8TeV");
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/GluGlu_HToMM_M-125.root",runPeriod,false,true,maxEvents);
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/VBF_HToMM_M-125.root",runPeriod,false,true,maxEvents);
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/WH_HToMuMu_M-125.root",runPeriod,false,true,maxEvents);
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/ZH_HToMuMu_M-125.root",runPeriod,false,true,maxEvents);
+
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/DYJetsToLL_minimal.root",runPeriod,false,false,maxEvents);
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/TTJets_minimal.root",runPeriod,false,false,maxEvents);
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/WW_minimal.root",runPeriod,false,false,maxEvents);
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/WZ_minimal.root",runPeriod,false,false,maxEvents);
+  analyzer("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/ZZ_minimal.root",runPeriod,false,false,maxEvents);
   
 }

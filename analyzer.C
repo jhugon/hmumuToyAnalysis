@@ -22,34 +22,29 @@
 #include "src/SmearingTool.h"
 #include "src/SmearingTool2011.h"
 
-void analyzer ()
+void analyzer (TString inputFileName, TString runPeriod, bool isData, bool isSignal, unsigned maxEvents)
 {
   using namespace std;
 
   ///////////////////
   // Configuration
 
-  unsigned maxEvents = 100;
-  bool isData = false;
-  bool isSignal = true; // set to true if Higgs signal
-
-  TString inputFileName("/raid/raid8/jhugon/higgsSamples/stage1/8TeV/GluGlu_HToMM_M-125.root");
-  TString runPeriod("8TeV");
-
   float minMmm = 110;
   float maxMmm = 160;
 
   //gErrorIgnoreLevel = kError;
-  unsigned ISMEAR = 2;
+  const unsigned ISMEAR = 2;
 
   ///////////////////////////
   Double_t MASS_MUON = 0.105658367;    //GeV/c2
 
   //////////////////////////
   // Tree Branches
+  cout << "Analyzing filename: "<< inputFileName.Data() << endl;
 
   TChain * tree = new TChain("tree");
   tree->Add(inputFileName);
+
 
   _MuonInfo reco1, reco2;
 
@@ -118,8 +113,6 @@ void analyzer ()
   //////////////////////////
   //for PU reweighting
 
-  TRandom3 random(1457);
-
   reweight::LumiReWeighting lumiWeights("pileupDists/PileUpHistMC2012Summer50nsPoissonOOTPU.root","pileupDists/PileUpHist2012ABCD.root","pileup","pileup");
   if (runPeriod == "7TeV")
   {
@@ -150,8 +143,6 @@ void analyzer ()
   // Smearing
   SmearingTool *smearPT = new SmearingTool();
   SmearingTool2011 *smearPT2011 = new SmearingTool2011();
-
-  const double SQRT2 = sqrt(2);
 
   /////////////////////////////
   /////////////////////////////

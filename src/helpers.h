@@ -210,7 +210,7 @@ bool passPUJetID(int flag, PUJetID desiredLevel)
  return result;
 }
 
-float smearMC(float trueVal, float recoVal, float calib, float smearRatio,TRandom random, bool debug)
+float smearMC(float trueVal, float recoVal, float calib, float smearRatio, bool debug)
 {
   if (trueVal > 0.0)
   {
