@@ -10,13 +10,13 @@ Data samples are available on the UF analysis cluster in
 which physically resides on the melrose node.
 
 The current analyzer.C includes:
-  Pileup reweighting
-  Higgs signal muon resolution smearing to match the MuSclefit data resolution
-  Muon ID, Iso, and selection cuts mirroring the full analysis
+*  Pileup reweighting
+*  Higgs signal muon resolution smearing to match the MuSclefit data resolution
+*  Muon ID, Iso, and selection cuts mirroring the full analysis
 It does not include:  
-  Muon efficiency scale factors
-  HLT trigger matching or checks
-  MuScleFit muon corrections
+*  Muon efficiency scale factors
+*  HLT trigger matching or checks
+*  MuScleFit muon corrections
 
 Instructions
 ============
