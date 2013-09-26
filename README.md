@@ -13,6 +13,7 @@ The current analyzer.C includes:
 *  Pileup reweighting
 *  Higgs signal muon resolution smearing to match the MuSclefit data resolution
 *  Muon ID, Iso, and selection cuts mirroring the full analysis
+
 It does not include:  
 *  Muon efficiency scale factors
 *  HLT trigger matching or checks
