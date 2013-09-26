@@ -31,4 +31,6 @@ move into hmumuToyAnalysis.  analyzer.C is an example script for analyzing our N
 
     root -b -q -x run.C
 
-If you would like to analyze a different set of input files, then you can change run.C
+It spits out .root files with histograms inside.  If you would like to analyze a different set of input files, then you can change run.C
+
+To make images from the histograms, use the plot.py script.  Currently, it stacks each MC histogram, after rescaling appropriately, and displays the data on top.
