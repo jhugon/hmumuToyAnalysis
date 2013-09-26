@@ -16,11 +16,11 @@
 #include <TF1.h>
 #include <TRandom3.h>
 
-#include "DataFormats.h"
-#include "helpers.h"
-#include "LumiReweightingStandAlone.h"
-#include "SmearingTool.h"
-#include "SmearingTool2011.h"
+#include "src/DataFormats.h"
+#include "src/helpers.h"
+#include "src/LumiReweightingStandAlone.h"
+#include "src/SmearingTool.h"
+#include "src/SmearingTool2011.h"
 
 void analyzer ()
 {
