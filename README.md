@@ -9,6 +9,10 @@ Data samples are available on the UF analysis cluster in
 
 which physically resides on the melrose node.
 
+Even better, you can access it on the /cms filesystem here:
+
+    /cms/data/store/user/jhugon/hmumu/stage1/
+
 The current analyzer.C includes:
 *  Pileup reweighting
 *  Higgs signal muon resolution smearing to match the MuSclefit data resolution
