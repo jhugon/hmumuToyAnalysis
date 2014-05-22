@@ -186,7 +186,7 @@ void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, 
   for(unsigned i=0; i<nEvents;i++)
   {
     if(i >= maxEvents)
-      continue;
+      break;
 
     tree->GetEvent(i);
     if (i % reportEach == 0) cout << "Event: " << i << endl;
@@ -268,6 +268,7 @@ void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, 
     // Jet Part
     // Do basic selection on jets and JER corrections
     std::vector<TLorentzVector> jets;
+    std::vector<TLorentzVector> genJets;
     const float jetPtCut = 30.;
     const float jetAbsEtaCut = 4.7;
     const int jetPUIDCut = 4; // >=    tight = 7, medium = 6, loose = 4. Only loose is useful!!
@@ -284,6 +285,9 @@ void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, 
         TLorentzVector tmpJetVec;
         tmpJetVec.SetPtEtaPhiM(rawJets.pt[iJet],rawJets.eta[iJet],rawJets.phi[iJet],rawJets.mass[iJet]);
         jets.push_back(tmpJetVec);
+        TLorentzVector tmpGenJetVec;
+        tmpGenJetVec.SetPtEtaPhiM(rawJets.genPt[iJet],rawJets.genEta[iJet],rawJets.genPhi[iJet],rawJets.genMass[iJet]);
+        genJets.push_back(tmpGenJetVec);
       }
     }
 
