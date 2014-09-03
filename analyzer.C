@@ -17,6 +17,10 @@
 #include <TRandom3.h>
 
 #include <vector>
+#include <map>
+#include <limits>
+#include <sstream>
+#include <iomanip>
 
 #include "src/DataFormats.h"
 #include "src/helpers.h"
@@ -24,9 +28,19 @@
 #include "src/SmearingTool.h"
 #include "src/SmearingTool2011.h"
 
+
 void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, bool isData, bool isSignal, unsigned maxEvents)
 {
   using namespace std;
+
+  typedef map<unsigned long long,unsigned> CandCounterType;
+
+  CandCounterType candCounts;
+  //cout << "unsigned max: " << numeric_limits<unsigned>::max() << endl;
+  //cout << "unsigned long max: " << numeric_limits<unsigned long>::max() << endl;
+  //cout << "unsigned long long max: " << numeric_limits<unsigned long long>::max() << endl;
+  unsigned nTotal = 0;
+  unsigned nMulti = 0;
 
   ///////////////////
   // Configuration
@@ -191,6 +205,13 @@ void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, 
     tree->GetEvent(i);
     if (i % reportEach == 0) cout << "Event: " << i << endl;
 
+    //if (i % reportEach == 0) 
+    //{
+    //    cout << "Run: " << eventInfo.run << endl;
+    //    cout << "Lumi: " << eventInfo.lumi << endl;
+    //    cout << "Event: " << eventInfo.event << endl;
+    //}
+
     // Reject events with invalid muons
     if (reco1.pt < 0. || reco2.pt < 0.)
         continue;
@@ -258,6 +279,8 @@ void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, 
       reco1 = tmpMuon;
     }
 
+    
+
     // PU reweight
     float weight = 1.;
     if (!isData)
@@ -265,66 +288,107 @@ void analyzer (TString inputFileName,TString outputFileName, TString runPeriod, 
       weight *= lumiWeights.weight(nPU);
     }
 
-    // Jet Part
-    // Do basic selection on jets and JER corrections
-    std::vector<TLorentzVector> jets;
-    std::vector<TLorentzVector> genJets;
-    const float jetPtCut = 30.;
-    const float jetAbsEtaCut = 4.7;
-    const int jetPUIDCut = 4; // >=    tight = 7, medium = 6, loose = 4. Only loose is useful!!
-    for(unsigned iJet=0; (iJet < unsigned(rawJets.nJets) && iJet < 10);iJet++)
+    nTotal++;
+    // event ID
+    unsigned long long eventID = eventInfo.event;
+    eventID *= 1000000;
+    eventID += eventInfo.run;
+
+    stringstream eventIDStream;
+    stringstream eventIDStreamCheck;
+    eventIDStream << eventID;
+    eventIDStreamCheck << eventInfo.event << setw(6)<<setfill('0')<< eventInfo.run;
+    if (eventIDStream.str() != eventIDStreamCheck.str())
     {
-      // apply jet energy resolution corrections
-      if (rawJets.genPt[iJet]>0.0 && rawJets.pt[iJet]>15.)
-        rawJets.pt[iJet] = jerCorr(rawJets.pt[iJet],rawJets.genPt[iJet],rawJets.eta[iJet]); 
-      bool goodPt = rawJets.pt[iJet]>jetPtCut;
-      bool goodEta = fabs(rawJets.eta[iJet])<jetAbsEtaCut;
-      bool goodPUID = puJetFullId[iJet] >= jetPUIDCut;
-      if (goodPt && goodEta && goodPUID)
-      {
-        TLorentzVector tmpJetVec;
-        tmpJetVec.SetPtEtaPhiM(rawJets.pt[iJet],rawJets.eta[iJet],rawJets.phi[iJet],rawJets.mass[iJet]);
-        jets.push_back(tmpJetVec);
-        TLorentzVector tmpGenJetVec;
-        tmpGenJetVec.SetPtEtaPhiM(rawJets.genPt[iJet],rawJets.genEta[iJet],rawJets.genPhi[iJet],rawJets.genMass[iJet]);
-        genJets.push_back(tmpGenJetVec);
-      }
+        cout << "******************* Error *********************" << endl;
+        cout << "******* eventIDStream:      "<< eventIDStream.str() << endl;
+        cout << "******* eventIDStreamCheck: "<< eventIDStreamCheck.str() << endl;
+        cout << "***********************************************" << endl;
     }
 
-//    /////////////////////////////////////////////
-//
-//    cout << "Event: "<< eventInfo.run << ":" << eventInfo.event << endl;
-//
-//    // print muon-related info
-//    cout << "recoCandMass: " << recoCandMass << endl;
-//    cout << "muon Pt1: " << reco1.pt << endl;
-//    cout << "muon Pt2: " << reco2.pt << endl;
-//    cout << "muon eta1: " << reco1.eta << endl;
-//    cout << "muon eta2: " << reco2.eta << endl;
-//    cout << "muon iso1: " << getPFRelIso(reco1) << endl;
-//    cout << "muon iso2: " << getPFRelIso(reco2) << endl;
-//    cout << "PU weight: " << weight << endl;
-//    cout << endl;
-//
-//    // print jet-related info
-//    cout << "nJets: " << jets.size() << endl;
-//    for (unsigned iJet=0; iJet < jets.size(); iJet++)
+    if (candCounts.count(eventID)>0)
+    {
+        candCounts[eventID] += 1;
+    }
+    else
+    {
+        candCounts[eventID] = 1;
+    }
+
+//    // Jet Part
+//    // Do basic selection on jets and JER corrections
+//    std::vector<TLorentzVector> jets;
+//    std::vector<TLorentzVector> genJets;
+//    const float jetPtCut = 30.;
+//    const float jetAbsEtaCut = 4.7;
+//    const int jetPUIDCut = 4; // >=    tight = 7, medium = 6, loose = 4. Only loose is useful!!
+//    for(unsigned iJet=0; (iJet < unsigned(rawJets.nJets) && iJet < 10);iJet++)
 //    {
-//      cout << "Jet "<<(iJet+1)<<": pt="<< jets[iJet].Pt() << " eta="<<jets[iJet].Eta()<<endl;
+//      // apply jet energy resolution corrections
+//      if (rawJets.genPt[iJet]>0.0 && rawJets.pt[iJet]>15.)
+//        rawJets.pt[iJet] = jerCorr(rawJets.pt[iJet],rawJets.genPt[iJet],rawJets.eta[iJet]); 
+//      bool goodPt = rawJets.pt[iJet]>jetPtCut;
+//      bool goodEta = fabs(rawJets.eta[iJet])<jetAbsEtaCut;
+//      bool goodPUID = puJetFullId[iJet] >= jetPUIDCut;
+//      if (goodPt && goodEta && goodPUID)
+//      {
+//        TLorentzVector tmpJetVec;
+//        tmpJetVec.SetPtEtaPhiM(rawJets.pt[iJet],rawJets.eta[iJet],rawJets.phi[iJet],rawJets.mass[iJet]);
+//        jets.push_back(tmpJetVec);
+//        TLorentzVector tmpGenJetVec;
+//        tmpGenJetVec.SetPtEtaPhiM(rawJets.genPt[iJet],rawJets.genEta[iJet],rawJets.genPhi[iJet],rawJets.genMass[iJet]);
+//        genJets.push_back(tmpGenJetVec);
+//      }
 //    }
-//    cout << endl;
 //
-//    /////////////////////////////////////////////
-      // Fill Histograms
-
-      dimuonMassHist->Fill(recoCandMass,weight);
-      nJetsHist->Fill(jets.size(),weight);
-
+////    /////////////////////////////////////////////
+////
+////    cout << "Event: "<< eventInfo.run << ":" << eventInfo.event << endl;
+////
+////    // print muon-related info
+////    cout << "recoCandMass: " << recoCandMass << endl;
+////    cout << "muon Pt1: " << reco1.pt << endl;
+////    cout << "muon Pt2: " << reco2.pt << endl;
+////    cout << "muon eta1: " << reco1.eta << endl;
+////    cout << "muon eta2: " << reco2.eta << endl;
+////    cout << "muon iso1: " << getPFRelIso(reco1) << endl;
+////    cout << "muon iso2: " << getPFRelIso(reco2) << endl;
+////    cout << "PU weight: " << weight << endl;
+////    cout << endl;
+////
+////    // print jet-related info
+////    cout << "nJets: " << jets.size() << endl;
+////    for (unsigned iJet=0; iJet < jets.size(); iJet++)
+////    {
+////      cout << "Jet "<<(iJet+1)<<": pt="<< jets[iJet].Pt() << " eta="<<jets[iJet].Eta()<<endl;
+////    }
+////    cout << endl;
+////
+////    /////////////////////////////////////////////
+//      // Fill Histograms
+//
+//      dimuonMassHist->Fill(recoCandMass,weight);
+//      nJetsHist->Fill(jets.size(),weight);
+//
   }
 
-  TFile* outFile = new TFile(outputFileName,"RECREATE");
-  outFile->cd();
-  dimuonMassHist->Write();
-  nJetsHist->Write();
+//  TFile* outFile = new TFile(outputFileName,"RECREATE");
+//  outFile->cd();
+//  dimuonMassHist->Write();
+//  nJetsHist->Write();
+  CandCounterType::const_iterator candItr;
+
+  cout << "Size of candCounts: "<<candCounts.size()<<endl;
+  cout << "Number of cands per event" << endl;
+  for(candItr = candCounts.begin(); candItr != candCounts.end(); ++candItr)
+  {
+    if (candItr->second > 1)
+    {
+      cout << candItr->first << ": "<< candItr->second << endl;
+      nMulti++;
+    }
+  }
+  cout << "Total number of muon selected events: "<<nTotal<<endl;
+  cout << "Total number of multi-muon events: "<<nMulti<<endl;
 
 }

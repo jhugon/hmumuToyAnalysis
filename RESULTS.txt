@@ -1,0 +1,39 @@
+MC numbers In 110 < Mmumu < 160 GeV
+Multi-Muon Events / Total Events   Sample   Fraction
+14/43317 Run2012D
+16/42592 Run2012C
+5/26529  Run2012B
+2/5262   Run2012A
+37/117700    Total Data 0.03%
+
+0/4989 WW <0.1% at 99% CL
+478/6418 WZ 7.5%
+625/9247 ZZ 6.8%
+2/9100 ttbar 0.02%
+0/46567 DY <0.01% at 99% CL
+1143/48849 ZH 2.3%
+1929/47940 WH 4.0%
+0/55610 VBF <0.01% at 99% CL
+0/50987 GF <0.01% at 99% CL
+
+===========================================================
+
+Using above data, combined with XS, lumi, and orig events 
+predicts this many data events for 110 < Mmumu < 160 GeV 
+muon selection and 19.7 fb at 8 TeV:
+
+ggHmumu          0.000000
+vbfHmumu         0.000000
+wHmumu           0.058273
+zHmumu           0.019545
+
+TT               1.282666
+DY               0.000000
+
+WW               0.000000
+ZZ              21.075318
+WZ              31.290692
+
+Compared to a total MC Bkg estimate of 114546 events
+Total multi-muon background is <0.05%
+and <0.2% of the GF+VBF+VH signal.
