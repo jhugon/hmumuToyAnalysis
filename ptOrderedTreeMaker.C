@@ -29,12 +29,6 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
   ///////////////////
   // Configuration
 
-  //gErrorIgnoreLevel = kError;
-  const unsigned ISMEAR = 2;
-
-  ///////////////////////////
-  Double_t MASS_MUON = 0.105658367;    //GeV/c2
-
   //////////////////////////
   // Tree Branches
   cout << "Analyzing filename: "<< inputFileName.Data() << endl;
@@ -43,8 +37,18 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
   if (isSignal)
     cout << "isSignal\n";
 
-  TChain * tree = new TChain("tree");
-  tree->Add(inputFileName);
+  TFile* inFile = new TFile(inputFileName,"READ");
+  TTree * tree = (TTree*) inFile->Get("tree");
+  if (inFile == NULL)
+  {
+    cout << "Could not open file, not making tree" << endl;
+    return;
+  }
+  if (tree == NULL)
+  {
+    cout << "Could not find tree" << endl;
+    return;
+  }
 
 
   // These are the names of the muons (See src/DataFormats.h for definitions!)
@@ -98,16 +102,16 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
   //////////////////////////
   //for PU reweighting
 
-  reweight::LumiReWeighting* lumiWeights; 
+  reweight::LumiReWeighting* lumiWeights = NULL; 
   if (runPeriod == "7TeV")
   {
     cout << "Using 2011AB PU reweighting\n";
-    *lumiWeights = reweight::LumiReWeighting("pileupDists/PileUpHistMCFall11.root","pileupDists/PileUpHist2011AB.root","pileup","pileup");
+    lumiWeights = new reweight::LumiReWeighting("pileupDists/PileUpHistMCFall11.root","pileupDists/PileUpHist2011AB.root","pileup","pileup");
   }
   else if (runPeriod == "8TeV")
   {
     cout << "Using 2012ABCD PU reweighting\n";
-    *lumiWeights = reweight::LumiReWeighting("pileupDists/PileUpHistMC2012Summer50nsPoissonOOTPU.root","pileupDists/PileUpHist2012ABCD.root","pileup","pileup");
+    lumiWeights = new reweight::LumiReWeighting("pileupDists/PileUpHistMC2012Summer50nsPoissonOOTPU.root","pileupDists/PileUpHist2012ABCD.root","pileup","pileup");
   }
 
   ////////////////////////////
@@ -117,126 +121,48 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
   TTree* outtree = (TTree*) tree->Clone("outtree");
 
   _MuonInfo muLead;
-  outtree->Branch("muLead", &muLead
-                   "isTracker/I:isStandAlone/I:isGlobal/I:"
-                   "charge/I:pt/F:ptErr/F:eta/F:phi/F:"
-                   "trkPt/F:trkPtErr/F:trkEta/F:trkPhi/F:"
-                   "normChiSquare/F:"
-                   "d0_BS/F:dz_BS/F:"
-                   "d0_PV/F:dz_PV/F:"
-                   "numPixelLayers/I:"
-                   "numTrackerLayers/I:"
-                   "numStripLayers/I:"
-                   "validFracTracker/F:"
-                   "numValidMuonHits/I:"
-                   "numValidPixelHits/I:"    
-                   "numValidTrackerHits/I:"  
-                   "numValidStripHits/I:"    
-                   "numSegmentMatches/I:"    
-                   "numOfMatchedStations/I:"
-                   "trackIsoSumPt/F:"
-                   "trackIsoSumPtCorr/F:"      
-                   "hcalIso/F:"
-                   "ecalIso/F:"
-                   "relCombIso/F:"
-                   "isPFMuon/I:"
-                   "pfPt/F:"
-                   "pfEta/F:"
-                   "pfPhi/F:"
-                   "sumChargedHadronPtR03/F:"
-                   "sumChargedParticlePtR03/F:"
-                   "sumNeutralHadronEtR03/F:"
-                   "sumPhotonEtR03/F:"
-                   "sumPUPtR03/F:"
-                   "sumChargedHadronPtR04/F:"
-                   "sumChargedParticlePtR04/F:"
-                   "sumNeutralHadronEtR04/F:"
-                   "sumPhotonEtR04/F:"
-                   "sumPUPtR04/F:"
-                   "isHltMatched[3]/I:"
-                   "hltPt[3]/F:"
-                   "hltEta[3]/F:"
-                   "hltPhi[3]/F");
+  TBranch* muLeadBranch = outtree->Branch("muLead", &muLead, "isTracker/I:isStandAlone/I:isGlobal/I:charge/I:pt/F:ptErr/F:eta/F:phi/F:trkPt/F:trkPtErr/F:trkEta/F:trkPhi/F:normChiSquare/F:d0_BS/F:dz_BS/F:d0_PV/F:dz_PV/F:numPixelLayers/I:numTrackerLayers/I:numStripLayers/I:validFracTracker/F:numValidMuonHits/I:numValidPixelHits/I:numValidTrackerHits/I:numValidStripHits/I:numSegmentMatches/I:numOfMatchedStations/I:trackIsoSumPt/F:trackIsoSumPtCorr/F:hcalIso/F:ecalIso/F:relCombIso/F:isPFMuon/I:pfPt/F:pfEta/F:pfPhi/F:sumChargedHadronPtR03/F:sumChargedParticlePtR03/F:sumNeutralHadronEtR03/F:sumPhotonEtR03/F:sumPUPtR03/F:sumChargedHadronPtR04/F:sumChargedParticlePtR04/F:sumNeutralHadronEtR04/F:sumPhotonEtR04/F:sumPUPtR04/F:isHltMatched[3]/I:hltPt[3]/F:hltEta[3]/F:hltPhi[3]/F");
 
   _MuonInfo muSubLead;
-  outtree->Branch("muSubLead", &muSubLead,
-                   "isTracker/I:isStandAlone/I:isGlobal/I:"
-                   "charge/I:pt/F:ptErr/F:eta/F:phi/F:"
-                   "trkPt/F:trkPtErr/F:trkEta/F:trkPhi/F:"
-                   "normChiSquare/F:"
-                   "d0_BS/F:dz_BS/F:"
-                   "d0_PV/F:dz_PV/F:"
-                   "numPixelLayers/I:"
-                   "numTrackerLayers/I:"
-                   "numStripLayers/I:"
-                   "validFracTracker/F:"
-                   "numValidMuonHits/I:"
-                   "numValidPixelHits/I:"    
-                   "numValidTrackerHits/I:"  
-                   "numValidStripHits/I:"    
-                   "numSegmentMatches/I:"    
-                   "numOfMatchedStations/I:"
-                   "trackIsoSumPt/F:"
-                   "trackIsoSumPtCorr/F:"      
-                   "hcalIso/F:"
-                   "ecalIso/F:"
-                   "relCombIso/F:"
-                   "isPFMuon/I:"
-                   "pfPt/F:"
-                   "pfEta/F:"
-                   "pfPhi/F:"
-                   "sumChargedHadronPtR03/F:"
-                   "sumChargedParticlePtR03/F:"
-                   "sumNeutralHadronEtR03/F:"
-                   "sumPhotonEtR03/F:"
-                   "sumPUPtR03/F:"
-                   "sumChargedHadronPtR04/F:"
-                   "sumChargedParticlePtR04/F:"
-                   "sumNeutralHadronEtR04/F:"
-                   "sumPhotonEtR04/F:"
-                   "sumPUPtR04/F:"
-                   "isHltMatched[3]/I:"
-                   "hltPt[3]/F:"
-                   "hltEta[3]/F:"
-                   "hltPhi[3]/F");
+  TBranch* muSubLeadBranch = outtree->Branch("muSubLead", &muSubLead, "isTracker/I:isStandAlone/I:isGlobal/I:charge/I:pt/F:ptErr/F:eta/F:phi/F:trkPt/F:trkPtErr/F:trkEta/F:trkPhi/F:normChiSquare/F:d0_BS/F:dz_BS/F:d0_PV/F:dz_PV/F:numPixelLayers/I:numTrackerLayers/I:numStripLayers/I:validFracTracker/F:numValidMuonHits/I:numValidPixelHits/I:numValidTrackerHits/I:numValidStripHits/I:numSegmentMatches/I:numOfMatchedStations/I:trackIsoSumPt/F:trackIsoSumPtCorr/F:hcalIso/F:ecalIso/F:relCombIso/F:isPFMuon/I:pfPt/F:pfEta/F:pfPhi/F:sumChargedHadronPtR03/F:sumChargedParticlePtR03/F:sumNeutralHadronEtR03/F:sumPhotonEtR03/F:sumPUPtR03/F:sumChargedHadronPtR04/F:sumChargedParticlePtR04/F:sumNeutralHadronEtR04/F:sumPhotonEtR04/F:sumPUPtR04/F:isHltMatched[3]/I:hltPt[3]/F:hltEta[3]/F:hltPhi[3]/F");
 
   _TrackInfo muLeadHpreFSR;
-  TBranch* muLeadHpreFSRBranch;
+  TBranch* muLeadHpreFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM1HpreFSR"))
     muLeadHpreFSRBranch = outtree->Branch("muLeadHpreFSR",&muLeadHpreFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
   _TrackInfo muSubLeadHpreFSR;
-  TBranch* muSubLeadHpreFSRBranch;
+  TBranch* muSubLeadHpreFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM2HpreFSR"))
     muSubLeadHpreFSRBranch = outtree->Branch("muSubLeadHpreFSR",&muSubLeadHpreFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
   _TrackInfo muLeadZpreFSR;
-  TBranch* muLeadZpreFSRBranch;
+  TBranch* muLeadZpreFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM1ZpreFSR"))
     muLeadZpreFSRBranch = outtree->Branch("muLeadZpreFSR",&muLeadZpreFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
   _TrackInfo muSubLeadZpreFSR;
-  TBranch* muSubLeadZpreFSRBranch;
+  TBranch* muSubLeadZpreFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM2ZpreFSR"))
     muSubLeadZpreFSRBranch = outtree->Branch("muSubLeadZpreFSR",&muSubLeadZpreFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
   _TrackInfo muLeadHpostFSR;
-  TBranch* muLeadHpostFSRBranch;
+  TBranch* muLeadHpostFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM1HpostFSR"))
     muLeadHpostFSRBranch = outtree->Branch("muLeadHpostFSR",&muLeadHpostFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
   _TrackInfo muSubLeadHpostFSR;
-  TBranch* muSubLeadHpostFSRBranch;
+  TBranch* muSubLeadHpostFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM2HpostFSR"))
     muSubLeadHpostFSRBranch = outtree->Branch("muSubLeadHpostFSR",&muSubLeadHpostFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
   _TrackInfo muLeadZpostFSR;
-  TBranch* muLeadZpostFSRBranch;
+  TBranch* muLeadZpostFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM1ZpostFSR"))
     muLeadZpostFSRBranch = outtree->Branch("muLeadZpostFSR",&muLeadZpostFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
   _TrackInfo muSubLeadZpostFSR;
-  TBranch* muSubLeadZpostFSRBranch;
+  TBranch* muSubLeadZpostFSRBranch = NULL;
   if(!isData && tree->GetBranchStatus("genM2ZpostFSR"))
     muSubLeadZpostFSRBranch = outtree->Branch("muSubLeadZpostFSR",&muSubLeadZpostFSR,"charge/I:pt/F:ptErr/F:eta/F:phi/F");
 
@@ -258,72 +184,92 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
 
   for(unsigned i=0; i<nEvents;i++)
   {
-    if(i >= maxEvents)
-      break;
-
-    tree->GetEvent(i);
-    if (i % reportEach == 0) cout << "Event: " << i << endl;
-
-    // PU reweight
-    puweight = 1.;
-    if (!isData && lumiWeights != NULL)
+    if(i < maxEvents)
     {
-      puweight *= lumiWeights->weight(nPU);
-    }
-    puweightBranch->Fill();
+      tree->GetEvent(i);
+      if (i % reportEach == 0) cout << "Event: " << i << endl;
 
-    // Order muons by pt
-    if (reco1.pt > reco2.pt)
-    {
-      muLead = reco1;
-      muLeadHpreFSR = genM1HpreFSR;
-      muLeadZpreFSR = genM1ZpreFSR;
-      muLeadHpostFSR = genM1HpostFSR;
-      muLeadZpostFSR = genM1ZpostFSR;
-      muSubLead = reco2;
-      muSubLeadHpreFSR = genM2HpreFSR;
-      muSubLeadZpreFSR = genM2ZpreFSR;
-      muSubLeadHpostFSR = genM2HpostFSR;
-      muSubLeadZpostFSR = genM2ZpostFSR;
-    }
+      // PU reweight
+      puweight = 1.;
+      if (!isData && lumiWeights)
+      {
+        puweight *= lumiWeights->weight(nPU);
+      }
+
+      // Order muons by pt
+      if (reco1.pt > reco2.pt)
+      {
+        muLead = reco1;
+        muLeadHpreFSR = genM1HpreFSR;
+        muLeadZpreFSR = genM1ZpreFSR;
+        muLeadHpostFSR = genM1HpostFSR;
+        muLeadZpostFSR = genM1ZpostFSR;
+        muSubLead = reco2;
+        muSubLeadHpreFSR = genM2HpreFSR;
+        muSubLeadZpreFSR = genM2ZpreFSR;
+        muSubLeadHpostFSR = genM2HpostFSR;
+        muSubLeadZpostFSR = genM2ZpostFSR;
+      }
+      else
+      {
+        muLead = reco2;
+        muLeadHpreFSR = genM2HpreFSR;
+        muLeadZpreFSR = genM2ZpreFSR;
+        muLeadHpostFSR = genM2HpostFSR;
+        muLeadZpostFSR = genM2ZpostFSR;
+        muSubLead = reco1;
+        muSubLeadHpreFSR = genM1HpreFSR;
+        muSubLeadZpreFSR = genM1ZpreFSR;
+        muSubLeadHpostFSR = genM1HpostFSR;
+        muSubLeadZpostFSR = genM1ZpostFSR;
+      }
+    } // < maxEvents
     else
     {
-      muLead = reco2;
-      muLeadHpreFSR = genM2HpreFSR;
-      muLeadZpreFSR = genM2ZpreFSR;
-      muLeadHpostFSR = genM2HpostFSR;
-      muLeadZpostFSR = genM2ZpostFSR;
-      muSubLead = reco1;
-      muSubLeadHpreFSR = genM1HpreFSR;
-      muSubLeadZpreFSR = genM1ZpreFSR;
-      muSubLeadHpostFSR = genM1HpostFSR;
-      muSubLeadZpostFSR = genM1ZpostFSR;
-    }
+      puweight = -999.;
+      initMuonStruct(muLead);
+      initTrackStruct(muLeadHpreFSR);
+      initTrackStruct(muLeadZpreFSR);
+      initTrackStruct(muLeadHpostFSR);
+      initTrackStruct(muLeadZpostFSR);
+      initMuonStruct(muSubLead);
+      initTrackStruct(muSubLeadHpreFSR);
+      initTrackStruct(muSubLeadZpreFSR);
+      initTrackStruct(muSubLeadHpostFSR);
+      initTrackStruct(muSubLeadZpostFSR);
+    } 
 
-  if muLeadHpreFSRBranch != NULL;
-    muLeadHpreFSRBranch->Fill();
+    puweightBranch->Fill();
 
-  if muSubLeadHpreFSRBranch != NULL;
-    muSubLeadHpreFSRBranch->Fill();
+    muLeadBranch->Fill();
+    muSubLeadBranch->Fill();
 
-  if muLeadZpreFSRBranch != NULL;
-    muLeadZpreFSRBranch->Fill();
+    if (muLeadHpreFSRBranch)
+      muLeadHpreFSRBranch->Fill();
 
-  if muSubLeadZpreFSRBranch != NULL;
-    muSubLeadZpreFSRBranch->Fill();
+    if (muSubLeadHpreFSRBranch)
+      muSubLeadHpreFSRBranch->Fill();
 
-  if muLeadHpostFSRBranch != NULL;
-    muLeadHpostFSRBranch->Fill();
+    if (muLeadZpreFSRBranch)
+      muLeadZpreFSRBranch->Fill();
 
-  if muSubLeadHpostFSRBranch != NULL;
-    muSubLeadHpostFSRBranch->Fill();
+    if (muSubLeadZpreFSRBranch)
+      muSubLeadZpreFSRBranch->Fill();
 
-  if muLeadZpostFSRBranch != NULL;
-    muLeadZpostFSRBranch->Fill();
+    if (muLeadHpostFSRBranch)
+      muLeadHpostFSRBranch->Fill();
 
-  if muSubLeadZpostFSRBranch != NULL;
-    muSubLeadZpostFSRBranch->Fill();
+    if (muSubLeadHpostFSRBranch)
+      muSubLeadHpostFSRBranch->Fill();
 
+    if (muLeadZpostFSRBranch)
+      muLeadZpostFSRBranch->Fill();
+
+    if (muSubLeadZpostFSRBranch)
+      muSubLeadZpostFSRBranch->Fill();
+
+    if(i >= maxEvents)
+      break;
   }//event loop
 
   TFile* outFile = new TFile(outputFileName,"RECREATE");
