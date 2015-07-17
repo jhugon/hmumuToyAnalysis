@@ -200,29 +200,59 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
       if (reco1.pt > reco2.pt)
       {
         muLead = reco1;
-        muLeadHpreFSR = genM1HpreFSR;
-        muLeadZpreFSR = genM1ZpreFSR;
-        muLeadHpostFSR = genM1HpostFSR;
-        muLeadZpostFSR = genM1ZpostFSR;
         muSubLead = reco2;
-        muSubLeadHpreFSR = genM2HpreFSR;
-        muSubLeadZpreFSR = genM2ZpreFSR;
-        muSubLeadHpostFSR = genM2HpostFSR;
-        muSubLeadZpostFSR = genM2ZpostFSR;
       }
       else
       {
         muLead = reco2;
-        muLeadHpreFSR = genM2HpreFSR;
-        muLeadZpreFSR = genM2ZpreFSR;
-        muLeadHpostFSR = genM2HpostFSR;
-        muLeadZpostFSR = genM2ZpostFSR;
         muSubLead = reco1;
+      }
+
+      // same for each pair of gen muons
+      if (genM1HpreFSR.pt > genM2HpreFSR.pt)
+      {
+        muLeadHpreFSR = genM1HpreFSR;
+        muSubLeadHpreFSR = genM2HpreFSR;
+      }
+      else
+      {
+        muLeadHpreFSR = genM2HpreFSR;
         muSubLeadHpreFSR = genM1HpreFSR;
+      }
+
+      if (genM1ZpreFSR.pt > genM2ZpreFSR.pt)
+      {
+        muLeadZpreFSR = genM1ZpreFSR;
+        muSubLeadZpreFSR = genM2ZpreFSR;
+      }
+      else
+      {
+        muLeadZpreFSR = genM2ZpreFSR;
         muSubLeadZpreFSR = genM1ZpreFSR;
+      }
+
+      if (genM1HpostFSR.pt > genM2HpostFSR.pt)
+      {
+        muLeadHpostFSR = genM1HpostFSR;
+        muSubLeadHpostFSR = genM2HpostFSR;
+      }
+      else
+      {
+        muLeadHpostFSR = genM2HpostFSR;
         muSubLeadHpostFSR = genM1HpostFSR;
+      }
+
+      if (genM1ZpostFSR.pt > genM2ZpostFSR.pt)
+      {
+        muLeadZpostFSR = genM1ZpostFSR;
+        muSubLeadZpostFSR = genM2ZpostFSR;
+      }
+      else
+      {
+        muLeadZpostFSR = genM2ZpostFSR;
         muSubLeadZpostFSR = genM1ZpostFSR;
       }
+
     } // < maxEvents
     else
     {
