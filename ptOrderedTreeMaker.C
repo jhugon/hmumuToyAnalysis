@@ -36,6 +36,7 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
     cout << "isData\n";
   if (isSignal)
     cout << "isSignal\n";
+  cout << "Writing to: "<< outputFileName.Data() << endl;
 
   TFile* inFile = new TFile(inputFileName,"READ");
   TTree * tree = (TTree*) inFile->Get("tree");
@@ -119,6 +120,16 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
 
   TFile* outFile = new TFile(outputFileName,"RECREATE");
   outFile->cd();
+
+  TTree * metadata = (TTree*) inFile->Get("metadata");
+  if (metadata != NULL)
+  {
+    outFile->cd();
+    metadata->CloneTree()->Write();
+  }
+
+  outFile->cd();
+
   TTree* treefriend = new TTree("treefriend","treefriend");
   treefriend->Write();
 

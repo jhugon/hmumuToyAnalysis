@@ -11,6 +11,21 @@ root.gROOT.SetBatch(True)
 
 #################################################3
 
+nEventsMap = {}
+nEventsMap["ggHmumu_8TeV"] = 49994
+nEventsMap["vbfHmumu_8TeV"] = 49894
+
+nEventsMap["zHmumu_8TeV"] = 10000
+nEventsMap["wHmumu_8TeV"] = 10000
+nEventsMap["DY_8TeV"] = 30086987
+nEventsMap["TT_8TeV"] = 6921652 
+nEventsMap["WW_8TeV"] =  5218045
+nEventsMap["WZ_8TeV"] = 10000283
+nEventsMap["ZZ_8TeV"] = 10320000
+nEventsMap["QCD_8TeV"] =  20764602
+
+#################################################3
+
 def loadFiles(globstr):
 
   # Load files
@@ -25,6 +40,7 @@ def loadFiles(globstr):
     elif "7TeV" in fn:
       energy = "7TeV"
     isSignal = False
+    isData = False
     mh = "125"
     sampleName = ""
     if "GluGlu" in fn or "gg" in fn:
@@ -61,6 +77,11 @@ def loadFiles(globstr):
     if "ZZ" in fn:
       sampleName = "ZZ"
 
+    match = re.search(r"[a-zA-Z0-9]+Run[a-zA-Z0-9]+",fn)
+    if match:
+      sampleName = match.group(0)
+      isData = True
+
     fnOut = sampleName
 
     if isSignal:
@@ -79,6 +100,7 @@ def loadFiles(globstr):
       'energy':energy,
       'sampleName':sampleName,
       'isSignal':isSignal,
+      'isData':isData,
     }
     if isSignal:
       thisResult['mh'] = mh
@@ -99,6 +121,24 @@ def nminusoneCutMaker(variableStr,cutStr):
 def makeHists(fileDict):
   print "Running on {0}".format(fileDict['fn'])
   tfile = root.TFile(fileDict['fn'])
+
+  # get ngenerated events
+  originalNumEvents = 0
+  if not fileDict['isData']:
+    metadata = tfile.Get("metadata")
+    if metadata:
+      for iEntry in range(metadata.GetEntries()):
+        metadata.GetEntry(iEntry)
+        originalNumEvents += metadata.originalNumEvents
+  for key in nEventsMap:
+    if key in fileDict['fn']:
+      originalNumEvents = nEventsMap[key]
+
+  scaleFactor = 1.
+  if originalNumEvents > 0:
+    scaleFactor /= float(originalNumEvents)
+  print "Original NumEvents: {0} Scale factor: {1}".format(originalNumEvents,scaleFactor)
+
   tree = tfile.Get("treefriend")
   tree.AddBranchToCache("*")
   
@@ -163,6 +203,8 @@ def makeHists(fileDict):
     hist = root.gDirectory.Get(histTmpName)
     hist.SetName(histName)
     hist.SetTitle("")
+    hist.Sumw2()
+    hist.Scale(scaleFactor)
     hist.Write()
 
   outfile.Close()
