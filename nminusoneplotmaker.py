@@ -11,6 +11,50 @@ root.gROOT.SetBatch(True)
 
 #################################################3
 
+SIGSF = 10000.
+
+# in fb^-1
+lumiDict = {}
+lumiDict["13TeV"] = 0.040 #Guess
+lumiDict["8TeV"] = 19.712 #2012ABCD 22Jan2013 Pixel-Lumi
+lumiDict["7TeV"] = 5.05 #2011AB
+
+hmm_br = {'125': 2.19e-04 }
+
+# in pb
+xsec = {}
+xsec["DY_8TeV"] = 3503.71   ## madgraph
+xsec["ttbar_8TeV"] = 225.197   ## madgraph
+
+xsec["WW_8TeV"] =   54.838
+xsec["WZ_8TeV"] =   33.21 
+xsec["ZZ_8TeV"] =  17.654 
+
+xsec["gg_M125_8TeV"] =   19.27  * hmm_br['125'] * SIGSF
+xsec["vbf_M125_8TeV"] =    1.578  * hmm_br['125'] * SIGSF
+xsec["wh_M125_8TeV"] =     0.7046  * hmm_br['125'] * SIGSF
+xsec["zh_M125_8TeV"] =     0.4153  * hmm_br['125'] * SIGSF
+xsec["vh_M125_8TeV"] =    xsec["wh_M125_8TeV"]+xsec["zh_M125_8TeV"]
+xsec["tth_M125_8TeV"] =       0.1293  * hmm_br['125'] * SIGSF
+
+#LHC Higgs XS WG: European Strat Group
+xsec["DY_14TeV"] = 6131.
+xsec["ttbar_14TeV"] = 964.6 #LHC Higgs XS WG: European Strat Group
+
+# Extrapolate Backgrounds
+xsec["DY_13TeV"] = 5693.53
+xsec["ttbar_13TeV"] = 814.4 #https://indico.ifca.es/indico/event/69/contribution/1/material/slides/1.pdf
+# Signal from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt1314TeV
+xsec["gg_M125_13TeV"] =  43.92 * hmm_br['125'] * SIGSF
+xsec["vbf_M125_13TeV"] =   3.748 * hmm_br['125']  * SIGSF
+xsec["wh_M125_13TeV"] =    1.380  * hmm_br['125'] * SIGSF
+xsec["zh_M125_13TeV"] =     0.8696  * hmm_br['125'] * SIGSF
+xsec["vh_M125_13TeV"] =    xsec["wh_M125_13TeV"]+xsec["zh_M125_13TeV"]
+xsec["tth_M125_13TeV"] =      0.5085  * hmm_br['125'] * SIGSF
+
+
+#################################################3
+
 def loadFiles(globstr="*_hists.root"):
 
   # Load files
@@ -51,13 +95,13 @@ def loadFiles(globstr="*_hists.root"):
       color = root.kGreen
     if "DYToMuMu" in fn:
       sampleName = "DYToMuMu"
-      color = root.kYellow
+      color = root.kOrange
     elif "DYToTauTau" in fn:
       sampleName = "DYToTauTau"
       color = root.kPink
     elif "DY" in fn:
       sampleName = "DY"
-      color = root.kYellow
+      color = root.kOrange
     if "QCD" in fn:
       sampleName = "QCD"
     if "TT" in fn or "ttbar" in fn:
@@ -81,6 +125,20 @@ def loadFiles(globstr="*_hists.root"):
       sampleName = match.group(0)
       isData = True
 
+    ## Cross Section
+    xs = -1.
+    if not isData:
+      matchStr = r".+_hists.root"
+      match = re.search(r"(.+)_hists.root",fn)
+      if match:
+        key = match.group(1)
+        if xsec.has_key(key):
+          xs = xsec[key]
+        else:
+          raise Exception("Datasample '{0}' not found in xsec dict.".format(key))
+      else:
+        raise Exception("Could not match filename '{0}' to '{1}'".format(fn,matchStr))
+
     fnOut = sampleName
 
     if isSignal:
@@ -101,6 +159,7 @@ def loadFiles(globstr="*_hists.root"):
       'isSignal':isSignal,
       'isData':isData,
       'color':color,
+      'xs': xs,
     }
     if isSignal:
       thisResult['mh'] = mh
@@ -118,6 +177,20 @@ def makeDataMCStack(fileDicts,energy,canvas):
   dataSampleDicts = [x for x in fileDicts if x['isData']]
   signalSampleDicts = [x for x in fileDicts if x['isSignal']]
   backgroundSampleDicts = [x for x in fileDicts if not (x['isSignal'] or x['isData'])]
+
+  orderDef = [
+      "WW",
+      "WZ",
+      "ZZ",
+      "DYToTauTau",
+      "WJets",
+      "QCD",
+      "ttbar",
+      "DYToMuMu",
+      "DY",
+  ]
+
+  backgroundSampleDicts = sorted(backgroundSampleDicts,key=lambda x:orderDef.index(x['sampleName']))
 
   dataSamples = []
   for d in dataSampleDicts:
@@ -186,6 +259,8 @@ def makeDataMCStack(fileDicts,energy,canvas):
       h.SetLineColor(sample['color'])
       if not sample['isSignal']:
         h.SetFillColor(sample['color'])
+      sf = sample['xs']*lumiDict[sample['energy']]*1000.
+      h.Scale(sf)
     return h
     
 
