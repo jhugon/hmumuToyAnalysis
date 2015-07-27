@@ -111,6 +111,10 @@ def loadFiles(globstr="*_hists.root"):
 
 def makeDataMCStack(fileDicts,energy,canvas):
 
+  #print "********** ",energy,"****************"
+  #print fileDicts
+  #print "********** ******** ****************"
+
   dataSampleDicts = [x for x in fileDicts if x['isData']]
   signalSampleDicts = [x for x in fileDicts if x['isSignal']]
   backgroundSampleDicts = [x for x in fileDicts if not (x['isSignal'] or x['isData'])]
@@ -130,6 +134,12 @@ def makeDataMCStack(fileDicts,energy,canvas):
     f = root.TFile(d['fn'])
     d['rootfile'] = f
     backgroundSamples.append(d)
+
+  #print "********** ",energy,"****************"
+  #print dataSamples
+  #print signalSamples
+  #print backgroundSamples
+  #print "********** ******** ****************"
 
   histDicts = [
     {'name':"muLeadPt",'xtitle':"Leading Muon p_{T} [GeV]"},
@@ -161,27 +171,38 @@ def makeDataMCStack(fileDicts,energy,canvas):
   def getHist(histDict,sample):
     histName = histDict['name']
     h = sample['rootfile'].Get(histName)
+    h.UseCurrentStyle()
     if not h:
      raise Exception("Histogram '{0}' not found in file: '{1}'".format(histName,sample['fn']))
-    if not sample['isData']:
-      print sample 
-      print "color: ",sample['color']
+    if sample['isData']:
+      #print "Justin isData: ",sample
+      h.SetFillColor(root.kBlack)
+      h.SetLineColor(root.kBlack)
+      h.SetMarkerColor(root.kBlack)
+    else:
+      #print "Justin isNotData: ",sample
+      #print sample 
+      #print "color: ",sample['color']
       h.SetLineColor(sample['color'])
       if not sample['isSignal']:
         h.SetFillColor(sample['color'])
-    else:
-      h.SetLineColor(root.kBlack)
-      h.SetMarkerColor(root.kBlack)
     return h
     
 
   for histDict in histDicts:
+    outfn = "{0}_{1}.png".format(histDict['name'],energy)
     signalHists = []
     for sample in signalSamples:
-      signalHists.append(getHist(histDict,sample))
+      tmpHist = getHist(histDict,sample)
+      signalHists.append(tmpHist)
+      #tmpHist.Draw()
+      #canvas.SaveAs("test/"+sample['sampleName']+"_"+outfn)
     backgroundHists = []
     for sample in backgroundSamples:
-      backgroundHists.append(getHist(histDict,sample))
+      tmpHist = getHist(histDict,sample)
+      backgroundHists.append(tmpHist)
+      #tmpHist.Draw()
+      #canvas.SaveAs("test/"+sample['sampleName']+"_"+outfn)
     dataHists = []
     for sample in dataSamples:
       dataHists.append(getHist(histDict,sample))
@@ -189,12 +210,17 @@ def makeDataMCStack(fileDicts,energy,canvas):
     # Setup dataHist
     assert(len(backgroundHists)>0)
     dataHist = backgroundHists[0].Clone("dataHist_"+histDict['name']+energy)
-    dataHist.Clear()
+    dataHist.Reset()
+    dataHist.SetLineColor(root.kBlack)
+    dataHist.SetMarkerColor(root.kBlack)
     for h in dataHists:
       dataHist.Add(h)
 
+    #dataHist.Draw()
+    #canvas.SaveAs("test/data_"+outfn)
+
     dmcstack = DataMCStack(backgroundHists,dataHist,canvas,histDict['xtitle'],energyStr=energy)
-    canvas.SaveAs("{0}_{1}.png".format(histDict['name'],energy))
+    canvas.SaveAs(outfn)
 
 if __name__ == "__main__":
 
@@ -206,6 +232,6 @@ if __name__ == "__main__":
       energies.add(fd['energy'])
   for energy in energies:
     files = [x for x in fileDicts if x['energy']==energy]
-    makeDataMCStack(fileDicts,energy,canvas)
+    makeDataMCStack(files,energy,canvas)
 
 
