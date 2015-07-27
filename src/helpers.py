@@ -3,6 +3,8 @@ import ROOT as root
 from ROOT import gStyle as gStyle
 import array
 
+PRELIMINARYSTRING = "CMS Internal"
+
 def setNormalColorTable():
   rArray = array.array('d',[0.0,1.0,1.0])
   gArray = array.array('d',[1.0,1.0,0.0])
@@ -90,6 +92,15 @@ setStyle()
 def setHistTitles(hist,xlabel,ylabel):
     hist.GetXaxis().SetTitle(xlabel)
     hist.GetYaxis().SetTitle(ylabel)
+
+def getBinWidthStr(hist):
+    binWidth = (hist.GetXaxis().GetXmax()-hist.GetXaxis().GetXmin())/hist.GetXaxis().GetNbins()
+    binWidthPrec = "0"
+    if binWidth % 1 > 0.0:
+      binWidthPrec = "1"
+      if binWidth*10 % 1 > 0.0:
+        binWidthPrec = "2"
+    return ("%."+binWidthPrec+"f") % (binWidth)
 
 class DataMCStack:
   def __init__(self, mcHistList, dataHist, canvas, xtitle, ytitle="", drawStack=True,nDivX=7,xlimits=[],showOverflow=False,lumi=5.0,logy=False,signalsNoStack=[],showCompatabilityTests=True,integralPlot=False,energyStr="8TeV",ylimits=[],ylimitsRatio=[],pullType="",doMCErrors=False,showPullStats=False,yMaxVals=[],yMaxXRanges=[],mcVariations=None,scaleMC2Data=False):
@@ -230,9 +241,11 @@ class DataMCStack:
     #print getattr(self,"getPullDistributionParams")(self.pullList)
 
     #Find Maximum y-value
-    if xlimits != []:
-      self.mcSumHist.GetXaxis().SetRangeUser(*xlimits)
-      self.dataHist.GetXaxis().SetRangeUser(*xlimits)
+    if xlimits == []:
+      tmpAx = self.dataHist.GetXaxis()
+      xlimits = [tmpAx.GetXmin(),tmpAx.GetXmax()]
+    self.mcSumHist.GetXaxis().SetRangeUser(*xlimits)
+    self.dataHist.GetXaxis().SetRangeUser(*xlimits)
     mcMax = self.mcSumHist.GetMaximum()
     if self.mcVarHist != None:
       mcMax = self.mcSumHist.GetMaximum()

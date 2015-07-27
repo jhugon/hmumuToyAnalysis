@@ -1,3 +1,5 @@
 *_C.*
 *.pyc
 *.root
+*.png
+*.pdf
