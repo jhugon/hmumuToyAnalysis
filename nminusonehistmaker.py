@@ -77,7 +77,7 @@ def loadFiles(globstr):
     if "ZZ" in fn:
       sampleName = "ZZ"
 
-    match = re.search(r"[a-zA-Z0-9]+Run[a-zA-Z0-9]+",fn)
+    match = re.search(r"[a-zA-Z0-9-]+Run[a-zA-Z0-9-]+",fn)
     if match:
       sampleName = match.group(0)
       isData = True
@@ -212,7 +212,8 @@ def makeHists(fileDict):
 if __name__ == "__main__":
 
 
-  globstr = "*_ptOrdered.root"
+  #globstr = "*_ptOrdered.root"
+  globstr = "*2015*_ptOrdered.root"
   fileDicts = loadFiles(globstr)
   #for fd in fileDicts:
   #  print fd
