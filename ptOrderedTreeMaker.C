@@ -39,16 +39,21 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
   cout << "Writing to: "<< outputFileName.Data() << endl;
 
   TFile* inFile = new TFile(inputFileName,"READ");
-  TTree * tree = (TTree*) inFile->Get("tree");
   if (inFile == NULL)
   {
-    cout << "Could not open file, not making tree" << endl;
+    cout << "Could not open file, not making tree, exiting." << endl;
     return;
   }
+  TTree * tree = (TTree*) inFile->Get("tree");
   if (tree == NULL)
   {
-    cout << "Could not find tree" << endl;
-    return;
+    cout << "Could not find tree at 'tree', trying 'dimuons/tree'" << endl;
+    tree = (TTree*) inFile->Get("dimuons/tree");
+    if (tree == NULL)
+    {
+      cout << "Could not find tree at 'dimuons/tree', exiting." << endl;
+      return;
+    }
   }
 
   // These are the names of the muons (See src/DataFormats.h for definitions!)
@@ -122,6 +127,10 @@ void ptOrderedTreeMaker (TString inputFileName,TString outputFileName, TString r
   outFile->cd();
 
   TTree * metadata = (TTree*) inFile->Get("metadata");
+  if (metadata == NULL)
+  {
+    metadata = (TTree*) inFile->Get("dimuons/metadata");
+  }
   if (metadata != NULL)
   {
     outFile->cd();
