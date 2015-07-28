@@ -186,6 +186,8 @@ def makeHists(fileDict):
   nminusoneHistDicts.extend([
     {'name':"muLeadPFRelIso",'var':"(muLead.sumChargedHadronPtR04 + max(0.0,muLead.sumNeutralHadronEtR04+muLead.sumPhotonEtR04 - 0.5*muLead.sumPUPtR04))/muLead.pt",'hist':"200,0,2",'cuts':nminusoneCutMaker("muLead.sumNeutralHadronEtR04",muonCuts)+" && "+ triggerMatchedCut},
     {'name':"muSubLeadPFRelIso",'var':"(muSubLead.sumChargedHadronPtR04 + max(0.0,muSubLead.sumNeutralHadronEtR04+muSubLead.sumPhotonEtR04 - 0.5*muSubLead.sumPUPtR04))/muSubLead.pt",'hist':"200,0,2",'cuts':nminusoneCutMaker("muSubLead.sumNeutralHadronEtR04",muonCuts)+" && "+ triggerMatchedCut},
+    {'name':"muLeadTrkRelIso",'var':"(muLead.trackIsoSumPt)/muLead.pt",'hist':"200,0,2",'cuts':nminusoneCutMaker("muLead.sumNeutralHadronEtR04",muonCuts)+" && "+ triggerMatchedCut},
+    {'name':"muSubLeadTrkRelIso",'var':"(muSubLead.trackIsoSumPt)/muSubLead.pt",'hist':"200,0,2",'cuts':nminusoneCutMaker("muSubLead.sumNeutralHadronEtR04",muonCuts)+" && "+ triggerMatchedCut},
     {'name':"muLeadIsHltMatched",'var':"muLead.isHltMatched[0]",'hist':"2,-0.5,1.5",'cuts':muonCuts + "&& muSubLead.isHltMatched[0] && muSubLead.pt>25.0"},
     {'name':"muSubLeadIsHltMatched",'var':"muSubLead.isHltMatched[0]",'hist':"2,-0.5,1.5",'cuts':muonCuts + "&& muLead.isHltMatched[0] && muLead.pt>25.0"},
   ])

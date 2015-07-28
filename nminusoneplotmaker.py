@@ -246,6 +246,10 @@ def makeDataMCStack(fileDicts,energy,canvas):
     {'name':"muSubLeadNumOfMatchedStations",'xtitle':"Sub-leading Muon N Matched Station Hits"},
     {'name':"muLeadNormChiSquare",'xtitle':"Leading Muon #chi^{2}/NDF"},
     {'name':"muSubLeadNormChiSquare",'xtitle':"Sub-leading Muon #chi^{2}/NDF"},
+    {'name':"muLeadPFRelIso",'xtitle':"Leading Muon PF Relative Isolation",'xlimits':[0,0.5]},
+    {'name':"muSubLeadPFRelIso",'xtitle':"Sub-leading Muon PF Relative Isolation",'xlimits':[0,0.5]},
+    {'name':"muLeadTrkRelIso",'xtitle':"Leading Muon Tracker Relative Isolation",'xlimits':[0,0.5]},
+    {'name':"muSubLeadTrkRelIso",'xtitle':"Sub-leading Muon Tracker Relative Isolation",'xlimits':[0,0.5]},
     {'name':"muLeadIsHltMatched",'xtitle':"Leading Muon is HLT Matched"},
     {'name':"muSubLeadIsHltMatched",'xtitle':"Sub-leading Muon is HLT Matched"},
   ]
