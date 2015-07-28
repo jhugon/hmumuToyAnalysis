@@ -100,6 +100,10 @@ def getBinWidthStr(hist):
       binWidthPrec = "1"
       if binWidth*10 % 1 > 0.0:
         binWidthPrec = "2"
+        if binWidth*100 % 1 > 0.0:
+          binWidthPrec = "3"
+          if binWidth*1000 % 1 > 0.0:
+            binWidthPrec = "4"
     return ("%."+binWidthPrec+"f") % (binWidth)
 
 class DataMCStack:
@@ -119,7 +123,10 @@ class DataMCStack:
     self.mcVarHist = None
     setYLimitsAuto = getattr(self,"setYLimitsAuto")
     if ytitle=="":
-      ytitle="Events/%s" % (getBinWidthStr(dataHist))
+      if "GeV" in xtitle:
+        ytitle="Events/%s GeV" % (getBinWidthStr(dataHist))
+      else:
+        ytitle="Events/%s" % (getBinWidthStr(dataHist))
     for mcHist in mcHistList:
       #print("nBinsX data: %i, mc: %i" % (nBinsX,mcHist.GetNbinsX()))
       assert(nBinsX == mcHist.GetNbinsX())
@@ -353,16 +360,16 @@ class DataMCStack:
     self.pullHist.SetLineStyle(1)
     self.pullHist.SetLineWidth(2)
     if pullType=="adrian1":
-      self.pullHist.GetYaxis().SetTitle("#frac{Data-MC}{Data}")
+      self.pullHist.GetYaxis().SetTitle(r"\frac{Data-MC}{Data}")
     elif pullType=="pullMC":
-      self.pullHist.GetYaxis().SetTitle("#frac{Data-MC}{\sigma_{MC}}")
+      self.pullHist.GetYaxis().SetTitle(r"\frac{Data-MC}{\sigma_{MC}}")
     else:
-      self.pullHist.GetYaxis().SetTitle("#frac{Data-MC}{\sigma_{Data}}")
-    self.pullHist.GetYaxis().SetTitleSize(0.040*pad1ToPad2FontScalingFactor)
+      self.pullHist.GetYaxis().SetTitle(r"\frac{Data-MC}{\sigma_{Data}}")
+    self.pullHist.GetYaxis().SetTitleSize(0.060*pad1ToPad2FontScalingFactor)
     self.pullHist.GetYaxis().SetLabelSize(0.040*pad1ToPad2FontScalingFactor)
     self.pullHist.GetYaxis().CenterTitle(1)
     self.pullHist.GetXaxis().SetTitleOffset(0.75*self.pullHist.GetXaxis().GetTitleOffset())
-    self.pullHist.GetYaxis().SetTitleOffset(0.70)
+    self.pullHist.GetYaxis().SetTitleOffset(0.50)
     self.pullHist.SetFillColor(856)
     self.pullHist.SetFillStyle(1001)
     if len(ylimitsRatio) == 2:
@@ -397,7 +404,10 @@ class DataMCStack:
   
     canvas.cd()
     self.tlatex.DrawLatex(0.33,0.96,PRELIMINARYSTRING)
-    self.tlatex.DrawLatex(0.75,0.96,"#sqrt{s}=%s, L=%.1f fb^{-1}" % (energyStr,lumi))
+    if lumi >0.5:
+      self.tlatex.DrawLatex(0.75,0.96,"#sqrt{s}=%s, L=%.1f fb^{-1}" % (energyStr,lumi))
+    else:
+      self.tlatex.DrawLatex(0.75,0.96,"#sqrt{s}=%s, L=%.1f pb^{-1}" % (energyStr,lumi*1000.))
 
   def getPullDistributionParams(self,pullList):
     pull = root.RooRealVar("pull","pull",-20,20)

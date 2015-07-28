@@ -15,9 +15,11 @@ SIGSF = 10000.
 
 # in fb^-1
 lumiDict = {}
-lumiDict["13TeV"] = 0.040 #Guess
 lumiDict["8TeV"] = 19.712 #2012ABCD 22Jan2013 Pixel-Lumi
 lumiDict["7TeV"] = 5.05 #2011AB
+# From https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/2446.html
+lumiDict["13TeV-Golden"] = 0.04024
+lumiDict["13TeV-MuonPhys"] = 0.04749
 
 hmm_br = {'125': 2.19e-04 }
 
@@ -42,7 +44,9 @@ xsec["DY_14TeV"] = 6131.
 xsec["ttbar_14TeV"] = 964.6 #LHC Higgs XS WG: European Strat Group
 
 # Extrapolate Backgrounds
-xsec["DY_13TeV"] = 5693.53
+#xsec["DY_13TeV"] = 5693.53
+xsec["DY_13TeV"] = 9000.00 # just adjusted untill approx correct
+xsec["DY_13TeV"] = 11500.00 # just adjusted untill approx correct
 xsec["ttbar_13TeV"] = 814.4 #https://indico.ifca.es/indico/event/69/contribution/1/material/slides/1.pdf
 # Signal from https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt1314TeV
 xsec["gg_M125_13TeV"] =  43.92 * hmm_br['125'] * SIGSF
@@ -170,7 +174,12 @@ def loadFiles(globstr="*_hists.root"):
 
 def makeDataMCStack(fileDicts,energy,canvas):
 
-  #print "********** ",energy,"****************"
+  energyWithStuff = energy
+  energy = re.sub(r"-.*","",energy)
+
+  lumi = lumiDict[energyWithStuff]
+
+  #print "********** ",energyWithStuff,"****************"
   #print fileDicts
   #print "********** ******** ****************"
 
@@ -208,15 +217,15 @@ def makeDataMCStack(fileDicts,energy,canvas):
     d['rootfile'] = f
     backgroundSamples.append(d)
 
-  #print "********** ",energy,"****************"
-  #print dataSamples
-  #print signalSamples
-  #print backgroundSamples
-  #print "********** ******** ****************"
+  print "********** ",energyWithStuff,"****************"
+  print dataSamples
+  print signalSamples
+  print backgroundSamples
+  print "********** ******** ****************"
 
   histDicts = [
-    {'name':"muLeadPt",'xtitle':"Leading Muon p_{T} [GeV]"},
-    {'name':"muSubLeadPt",'xtitle':"Sub-leading Muon p_{T} [GeV]"},
+    {'name':"muLeadPt",'xtitle':"Leading Muon p_{T} [GeV]",'xlimits':[0.,150.]},
+    {'name':"muSubLeadPt",'xtitle':"Sub-leading Muon p_{T} [GeV]",'xlimits':[0.,100.]},
     {'name':"muLeadIsGlobal",'xtitle':"Leading Muon is Global"},
     {'name':"muSubLeadIsGlobal",'xtitle':"Sub-leading Muon is Global"},
     {'name':"muLeadIsPFMuon",'xtitle':"Leading Muon is PF"},
@@ -225,10 +234,10 @@ def makeDataMCStack(fileDicts,energy,canvas):
     {'name':"muSubLeadEta",'xtitle':"Sub-leading muon |#eta|"},
     {'name':"muLeadNumTrackerLayers",'xtitle':"Leading Muon N Tracker Layers"},
     {'name':"muSubLeadNumTrackerLayers",'xtitle':"Sub-leading Muon N Tracker Layers"},
-    {'name':"muLeadD0",'xtitle':"Leading Muon D_{0}"},
-    {'name':"muSubLeadD0",'xtitle':"Sub-leading Muon D_{0}"},
-    {'name':"muLeadDz",'xtitle':"Leading Muon D_{z}"},
-    {'name':"muSubLeadDz",'xtitle':"Sub-leading Muon D_{z}"},
+    {'name':"muLeadD0",'xtitle':"Leading Muon D_{0}",'xlimits':[-0.05,0.05]},
+    {'name':"muSubLeadD0",'xtitle':"Sub-leading Muon D_{0}",'xlimits':[-0.05,0.05]},
+    {'name':"muLeadDz",'xtitle':"Leading Muon D_{z}",'xlimits':[-0.05,0.05]},
+    {'name':"muSubLeadDz",'xtitle':"Sub-leading Muon D_{z}",'xlimits':[-0.05,0.05]},
     {'name':"muLeadNumValidMuonHits",'xtitle':"Leading Muon N Valid Muon Hits"},
     {'name':"muSubLeadNumValidMuonHits",'xtitle':"Sub-leading Muon N Valid Muon Hits"},
     {'name':"muLeadNumValidPixelHits",'xtitle':"Leading Muon N Valid Pixel Hits"},
@@ -259,13 +268,15 @@ def makeDataMCStack(fileDicts,energy,canvas):
       h.SetLineColor(sample['color'])
       if not sample['isSignal']:
         h.SetFillColor(sample['color'])
-      sf = sample['xs']*lumiDict[sample['energy']]*1000.
+      sf = sample['xs']*lumiDict[energyWithStuff]*1000.
       h.Scale(sf)
+    if histDict.has_key('rebin'):
+      h.Rebin(histDict['rebin'])
     return h
     
 
   for histDict in histDicts:
-    outfn = "{0}_{1}.png".format(histDict['name'],energy)
+    outfn = "{0}_{1}.png".format(histDict['name'],energyWithStuff)
     signalHists = []
     for sample in signalSamples:
       tmpHist = getHist(histDict,sample)
@@ -284,7 +295,7 @@ def makeDataMCStack(fileDicts,energy,canvas):
 
     # Setup dataHist
     assert(len(backgroundHists)>0)
-    dataHist = backgroundHists[0].Clone("dataHist_"+histDict['name']+energy)
+    dataHist = backgroundHists[0].Clone("dataHist_"+histDict['name']+energyWithStuff)
     dataHist.Reset()
     dataHist.SetLineColor(root.kBlack)
     dataHist.SetMarkerColor(root.kBlack)
@@ -294,19 +305,41 @@ def makeDataMCStack(fileDicts,energy,canvas):
     #dataHist.Draw()
     #canvas.SaveAs("test/data_"+outfn)
 
-    dmcstack = DataMCStack(backgroundHists,dataHist,canvas,histDict['xtitle'],energyStr=energy)
+    xlimits = []
+    if histDict.has_key('xlimits'):
+      xlimits = histDict['xlimits']
+    ylimits = []
+    if histDict.has_key('ylimits'):
+      ylimits = histDict['ylimits']
+    logy = False
+    if histDict.has_key('logy'):
+      logy = histDict['logy']
+
+    canvas.Clear()
+    dmcstack = DataMCStack(backgroundHists,dataHist,canvas,histDict['xtitle'],energyStr=energy,xlimits=xlimits,logy=logy,ylimits=ylimits,lumi=lumi)
     canvas.SaveAs(outfn)
 
 if __name__ == "__main__":
 
   canvas = root.TCanvas("c")
   fileDicts = loadFiles()
+  #for fd in fileDicts:
+  #  print fd["sampleName"],fd['fn']
   energies = set()
   for fd in fileDicts:
     if not fd['energy'] in energies:
       energies.add(fd['energy'])
   for energy in energies:
-    files = [x for x in fileDicts if x['energy']==energy]
-    makeDataMCStack(files,energy,canvas)
+    if energy == "13TeV":
+      for validation in ["Golden","MuonPhys"]:
+        files = [x for x in fileDicts if x['energy']==energy]
+        for i in reversed(range(len(files))):
+          fn = files[i]['fn']
+          if "Run2015" in fn and not validation in fn:
+            files.pop(i)
+        makeDataMCStack(files,energy+"-"+validation,canvas)
+    else:
+      files = [x for x in fileDicts if x['energy']==energy]
+      makeDataMCStack(files,energy,canvas)
 
 
